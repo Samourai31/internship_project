@@ -13,21 +13,26 @@ driver = webdriver.Chrome(service=service)
 driver.maximize_window()
 
 # open the url
-driver.get('https://www.google.com/')
+driver.get('https://soft.reelly.io/sign-up')
 
-# populate search field
-search = driver.find_element(By.NAME, 'q')
-search.clear()
-search.send_keys('Car')
+driver.find_element(By.CSS_SELECTOR, 'div[wized="signinButtonSignup"]').click()
 
-# wait for 4 sec
-sleep(4)
+driver.find_element(By.ID, 'email-2').send_keys('ilyastest31@gmail.com')
+driver.find_element(By.ID, 'field').send_keys('Costco4991!')
+driver.find_element(By.CSS_SELECTOR, 'a[wized*="loginButton"]').click()
+sleep(3)
+driver.find_element(By.ID, 'w-node-_99a5c496-8f77-9959-16dd-e8eb9b22b697-9b22b68b').click()
+sleep(3)
+driver.find_element(By.CSS_SELECTOR, '.filter-button').click()
+sleep(3)
+driver.find_element(By.CSS_SELECTOR, '[w-el-onclick-0-0="8719b271-6a8b-431b-b597-dd0d49af99f3-0-0"]').click()
+sleep(3)
+driver.find_element(By.CSS_SELECTOR, 'img[src*="648fa2581719cb17514ece18"]').click()
+sleep(3)
 
-# click search button
-driver.find_element(By.NAME, 'btnK').click()
+cards = driver.find_elements(By.CSS_SELECTOR, 'div[wized="listingCardMLS"]')
 
-# verify search results
-assert 'car'.lower() in driver.current_url.lower(), f"Expected query not in {driver.current_url.lower()}"
-print('Test Passed')
+for_sale_cards = [card for card in cards if "For sale" in card.text]
 
-driver.quit()
+print("Cards with 'For sale':", len(for_sale_cards))
+
