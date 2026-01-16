@@ -1,64 +1,38 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 
 from app.application import Application
 
 
-def browser_init(context, scenario_name):
-    """
-    :param context: Behave context
-    """
-    # Chrome options
-    options = Options()
-    options.add_argument("--window-size=1920,1080")
+def browser_init(context):
+    # Initialize Chrome driver
+    service = Service(ChromeDriverManager().install())
+    context.driver = webdriver.Chrome(service=service)
 
-    driver_path = ChromeDriverManager().install()
-    service = Service(driver_path)
-
-    # Local driver (kept as-is)
-    context.driver = webdriver.Chrome(service=service, options=options)
+    # Browser setup
     context.driver.maximize_window()
-
-    # ===== BrowserStack added (no if) =====
-    bs_user = 'ilyas_xbhds4'
-    bs_key = 'jjZpxJBD4Apx1ioUYKG4'
-
-    url = f'https://{bs_user}:{bs_key}@hub-cloud.browserstack.com/wd/hub'
-
-    bstack_options = {
-        "os": "Windows",
-        "osVersion": "11",
-        "browserVersion": "latest",
-        "sessionName": scenario_name,
-    }
-
-    options.set_capability('bstack:options', bstack_options)
-    context.driver = webdriver.Remote(command_executor=url, options=options)
-
-    # Waits
     context.driver.implicitly_wait(4)
     context.driver.wait = WebDriverWait(context.driver, 10)
 
-    # Initialize application
+    # App entry point
     context.app = Application(context.driver)
 
 
 def before_scenario(context, scenario):
-    print('\nStarted scenario: ', scenario.name)
-    browser_init(context, scenario.name)
+    print(f'\nStarted scenario: {scenario.name}')
+    browser_init(context)
 
 
 def before_step(context, step):
-    print('\nStarted step: ', step)
+    print(f'\nStarted step: {step.name}')
 
 
 def after_step(context, step):
     if step.status == 'failed':
-        print('\nStep failed: ', step)
+        print(f'\nStep failed: {step.name}')
 
 
-def after_scenario(context, feature):
+def after_scenario(context, scenario):
     context.driver.quit()
