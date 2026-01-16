@@ -1,38 +1,39 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.wait import WebDriverWait
 
 from app.application import Application
 
 
-def browser_init(context):
-    # Initialize Chrome driver
-    service = Service(ChromeDriverManager().install())
-    context.driver = webdriver.Chrome(service=service)
+def browser_init(context, mobile_device="iPhone X"):
+    options = webdriver.ChromeOptions()
 
-    # Browser setup
-    context.driver.maximize_window()
+    if mobile_device:
+        mobile_emulation = {"deviceName": mobile_device}
+        options.add_experimental_option("mobileEmulation", mobile_emulation)
+
+    driver_path = ChromeDriverManager().install()
+    service = Service(driver_path)
+    context.driver = webdriver.Chrome(service=service, options=options)
+
+    context.driver.maximize_window()  # optional, Chrome may ignore this in mobile emulation
     context.driver.implicitly_wait(4)
     context.driver.wait = WebDriverWait(context.driver, 10)
-
-    # App entry point
     context.app = Application(context.driver)
 
 
 def before_scenario(context, scenario):
-    print(f'\nStarted scenario: {scenario.name}')
+    print('\nStarted scenario: ', scenario.name)
     browser_init(context)
 
-
 def before_step(context, step):
-    print(f'\nStarted step: {step.name}')
-
+    print('\nStarted step: ', step)
 
 def after_step(context, step):
     if step.status == 'failed':
-        print(f'\nStep failed: {step.name}')
-
+        print('\nStep failed: ', step)
 
 def after_scenario(context, scenario):
-    context.driver.quit()
+    if hasattr(context, "driver"):
+        context.driver.quit()
